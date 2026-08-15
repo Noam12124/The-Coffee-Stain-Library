@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MockDatabaseService } from '../mock-database.service'; 
-import { User } from './entities/user.entity/user.entity';
+import { User } from './users.entity';
+import { Book } from 'src/books/books.entity';
  
 @Injectable()
 export class UserRepository {
@@ -14,18 +15,33 @@ export class UserRepository {
         const numericId = Number(id);
         return this.mockDb.users.find((user: User) => user.id === numericId);
     }
+    findByEmail(email: string): User | undefined {
+        return this.mockDb.users.find((user: User) => user.email === email);
+    }
     addBookToUser(userId: string | number, bookId: string | number): User | undefined {
         const user = this.findById(userId);
         if (user) {
-            //TODO : Implement logic to add the bookId to the user's borrowedBooks array and increment numOfBooks
+            user.books.push(bookId as unknown as Book); 
         }
         return user;
     }
     removeBookFromUser(userId: string | number, bookId: string | number): User | undefined {
         const user = this.findById(userId);
         if (user) {
-            //TODO : Implement logic to remove the bookId from the user's borrowedBooks array and decrement numOfBooks
+            user.books = user.books.filter((book: Book) => book.id !== Number(bookId));
         }
         return user;
+    }
+    create(userData: any): User {
+        const newUser = new User(
+            this.mockDb.users.length + 1,
+            userData.name,
+            userData.email,
+            userData.role,
+            userData.password
+        );
+        const users = this.mockDb.users as User[];
+        users.push(newUser);
+        return newUser;
     }
 }

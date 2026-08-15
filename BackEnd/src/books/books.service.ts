@@ -14,8 +14,6 @@ export class BookService {
     findById(id: number): Book | undefined {
         return this.bookRepository.findById(id);
     }
-    updateUserHoldingBook(bookId: number, userHoldingBook: number | null): Book | undefined {
-        return this.bookRepository.updateUserHoldingBook(bookId, userHoldingBook);
-    }
+
 }
     

@@ -18,6 +18,6 @@ export class BookRepository {
         if (book) {
             book.userHoldingBook = userHoldingBook;
         }
-        return book;
+        return book;    
     }
 }

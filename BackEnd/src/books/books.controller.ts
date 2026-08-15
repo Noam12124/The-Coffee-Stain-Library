@@ -14,11 +14,4 @@ export class BooksController {
         return this.bookService.findById(id);
     }
 
-    @Patch(':bookId/borrow/:userId')
-    borrowBook(
-        @Param('bookId', ParseIntPipe) bookId: number,
-        @Param('userId', ParseIntPipe) userHoldingBook: number,
-    ) {
-        return this.bookService.updateUserHoldingBook(bookId, userHoldingBook);
-    }
 }
