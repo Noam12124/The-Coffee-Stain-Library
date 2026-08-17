@@ -12,7 +12,12 @@ export class UsersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.usersService.findById(Number(id));
+  }
+
+  @Get('email/:email')
+  findByEmail(@Param('email') email: string) {
+    return this.usersService.findByEmail(email);
   }
 
   @Post(':userId/borrow/:bookId')
@@ -20,7 +25,7 @@ export class UsersController {
     @Param('userId') userId: string,
     @Param('bookId') bookId: string,
   ) {
-    return this.usersService.borrowBook(userId, bookId);
+    return this.usersService.borrowBook(Number(userId), Number(bookId));
   }
 
   @Post(':userId/return/:bookId')
@@ -28,6 +33,6 @@ export class UsersController {
     @Param('userId') userId: string,
     @Param('bookId') bookId: string,
   ) {
-    return this.usersService.returnBook(userId, bookId);
+    return this.usersService.returnBook(Number(userId), Number(bookId));
   }
 }
