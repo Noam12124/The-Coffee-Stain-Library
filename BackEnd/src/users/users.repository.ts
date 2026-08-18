@@ -13,35 +13,47 @@ export class UserRepository {
 
     findById(id: string | number): User | undefined {
         const numericId = Number(id);
-        return this.mockDb.users.find((user: User) => user.id === numericId);
+        return this.mockDb.users.find((user: User) => user.userId === numericId);
     }
+
     findByEmail(email: string): User | undefined {
         return this.mockDb.users.find((user: User) => user.email === email);
     }
-    addBookToUser(userId: string | number, bookId: string | number): User | undefined {
+
+    addBookToUser(userId: string | number, book: Book): User | undefined {
         const user = this.findById(userId);
         if (user) {
-            user.books.push(bookId as unknown as Book); 
+            user.books.push(book); 
         }
         return user;
     }
-    removeBookFromUser(userId: string | number, bookId: string | number): User | undefined {
+
+    removeBookFromUser(userId: string | number, book: Book): User | undefined {
         const user = this.findById(userId);
         if (user) {
-            user.books = user.books.filter((book: Book) => book.id !== Number(bookId));
+            user.books = user.books.filter((b: Book) => b.bookId !== book.bookId); 
         }
         return user;
     }
+
     create(userData: any): User {
+        let maxId = 0;
+        for (const user of this.mockDb.users) {
+            if (user.userId > maxId) {
+                maxId = user.userId;
+            }
+        }
+        const nextId = maxId + 1;
+
         const newUser = new User(
-            this.mockDb.users.length + 1,
+            nextId,
             userData.name,
             userData.email,
             userData.role,
             userData.password
         );
-        const users = this.mockDb.users as User[];
-        users.push(newUser);
+        
+        this.mockDb.users.push(newUser);
         return newUser;
     }
 }
