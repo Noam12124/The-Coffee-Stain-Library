@@ -1,29 +1,30 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { authApi } from "./services/api";
 import AuthView from "./components/AuthView.vue";
+import HomeView from "./components/HomeView.vue";
 
-// Single source of truth for "are we authenticated". Starts from
-// whatever's already in localStorage (e.g. a refreshed page).
 const isAuthenticated = ref(authApi.isAuthenticated());
 
+const currentUser = computed(() => authApi.getUser());
+
 function handleAuthenticated() {
-  // Token is already written to localStorage inside authApi by this
-  // point. Flipping this ref is what swaps the whole screen to blank —
-  // no intermediate "welcome" state, no layout chrome, per spec.
   isAuthenticated.value = true;
+}
+
+function handleLogout() {
+  authApi.logout();
+  isAuthenticated.value = false;
 }
 </script>
 
 <template>
-  <!--
-    Not authenticated -> AuthView (login/signup).
-    Authenticated     -> nothing but an empty container. Build your real
-    authenticated app inside this div later; for now it's intentionally
-    blank, exactly as specified.
-  -->
   <AuthView v-if="!isAuthenticated" @authenticated="handleAuthenticated" />
-  <div v-else class="authenticated-shell" />
+  <HomeView
+    v-else
+    :current-user="currentUser"
+    @logout="handleLogout"
+  />
 </template>
 
 <style>
@@ -35,10 +36,5 @@ body,
   width: 100%;
   min-height: 100vh;
   max-width: none;
-}
-
-.authenticated-shell {
-  min-height: 100vh;
-  width: 100%;
 }
 </style>

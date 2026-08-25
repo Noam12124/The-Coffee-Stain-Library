@@ -16,9 +16,7 @@ export class BookService {
 
     findById(id: number): Book {
         const book = this.bookRepository.findById(id);
-        if (!book) {
-            throw new NotFoundException(`Book with ID ${id} not found`);
-        }
+        if (!book) throw new NotFoundException(`Book with ID ${id} not found`);
         return book;
     }
 
@@ -30,29 +28,23 @@ export class BookService {
         return this.bookRepository.findBorrowed();
     }
 
-    create(bookData: { title: string; author: string }): Book {
-        return this.bookRepository.createBook(bookData.title, bookData.author);
+    create(bookData: { title: string; author: string; imageUrl?: string }): Book {
+        return this.bookRepository.createBook(bookData.title, bookData.author, bookData.imageUrl);
     }
 
-    update(id: number, bookData: { title?: string; author?: string }): Book {
+    update(id: number, bookData: { title?: string; author?: string; imageUrl?: string }): Book {
         const updated = this.bookRepository.updateBook(id, bookData);
-        if (!updated) {
-            throw new NotFoundException(`Book with ID ${id} not found`);
-        }
+        if (!updated) throw new NotFoundException(`Book with ID ${id} not found`);
         return updated;
     }
 
-delete(id: number): { deleted: boolean } {
+    delete(id: number): { deleted: boolean } {
         const book = this.findById(id);
-        
         if (book.borrowed) {
             throw new BadRequestException('Cannot delete a book that is currently borrowed');
         }
-
         const ok = this.bookRepository.deleteBook(id);
-        if (!ok) {
-            throw new NotFoundException(`Book with ID ${id} not found`);
-        }
+        if (!ok) throw new NotFoundException(`Book with ID ${id} not found`);
         return { deleted: ok };
     }
 
@@ -63,27 +55,21 @@ delete(id: number): { deleted: boolean } {
         }
 
         const user = this.userRepository.findById(userId);
-        if (!user) {
-            throw new NotFoundException(`User with ID ${userId} not found`);
-        }
+        if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
 
         if (user.books.length >= 3) {
             throw new BadRequestException('User has reached the limit of 3 borrowed books');
         }
 
         this.bookRepository.updateUserHoldingBook(bookId, userId);
-        this.userRepository.addBookToUser(userId, book); 
-        
+        this.userRepository.addBookToUser(userId, book);
         return book;
     }
 
     returnBook(bookId: number, userId: number): Book {
         const book = this.findById(bookId);
         const user = this.userRepository.findById(userId);
-
-        if (!user) {
-            throw new NotFoundException(`User with ID ${userId} not found`);
-        }
+        if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
 
         const hasBook = user.books.some((b: Book) => b.bookId === bookId);
         if (!hasBook) {
@@ -91,8 +77,7 @@ delete(id: number): { deleted: boolean } {
         }
 
         this.bookRepository.updateUserHoldingBook(bookId, null);
-        this.userRepository.removeBookFromUser(userId, book); 
-        
+        this.userRepository.removeBookFromUser(userId, book);
         return book;
     }
 }

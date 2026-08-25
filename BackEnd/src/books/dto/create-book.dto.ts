@@ -1,13 +1,17 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsOptional, IsString, IsNotEmpty} from 'class-validator';
+
 
 export class CreateBookDto {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
 
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  author!: string;
+    @IsString()
+    @IsNotEmpty()
+    title!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    author!: string;
+
+    @IsString()
+    @IsOptional()
+    imageUrl!: string;
 }

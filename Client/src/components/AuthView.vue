@@ -86,8 +86,7 @@ async function submit() {
             password: fields.password,
           });
 
-    // Token is now in localStorage (handled inside authApi). Tell the
-    // parent immediately so it can drop straight to the blank state.
+
     emit("authenticated", data.user);
   } catch (err) {
     serverError.value = err.message || "Something went wrong. Try again.";
