@@ -1,54 +1,63 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './users.repository';
-//import { BookRepository } from '../books/book.repository'; 
-
+import { Book } from 'src/books/books.entity';
+import { BookRepository } from 'src/books/books.repository';
+import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    //private readonly bookRepository: BookRepository,
-  ) {}
+  constructor(private readonly userRepository: UserRepository, private readonly bookRepository: BookRepository) {}
 
-  findAll() {
-    return this.userRepository.findAll();
+  findByEmail(email: string) {
+    const user = this.userRepository.findByEmail(email);
+    return user;
   }
-
-  findOne(id: string) {
+  findById(id: number) {
     const user = this.userRepository.findById(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return user;
   }
+  
+  borrowBook(bookId: number, userId: number): Book {
+        const book = this.bookRepository.findById(bookId);
+        if (book.borrowed) {
+            throw new BadRequestException('Book is already borrowed');
+        }
 
-  borrowBook(userId: string, bookId: string) {
-    const user = this.findOne(userId);
-    //const book = this.bookRepository.findById(bookId);
+        const user = this.userRepository.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
 
-    //if (!book) {
-      //throw new NotFoundException(`Book with ID ${bookId} not found`);
-    //}
+        if (user.books.length >= 3) {
+            throw new BadRequestException('User has reached the limit of 3 borrowed books');
+        }
 
-    //if (book.isRented) {
-      //throw new BadRequestException('This book is already rented by another user');
-    //}
+        this.userRepository.addBookToUser(userId, bookId); 
+        
+        return book;
+    }
 
-    //if (user.borrowedBooks.length >= 3) {
-      //throw new BadRequestException('User has reached the maximum limit of 3 borrowed books');
-    //}
+    returnBook(bookId: number, userId: number): Book {
+        const book = this.bookRepository.findById(bookId);
+        const user = this.userRepository.findById(userId);
 
-    //this.bookRepository.updateStatus(bookId, true, userId);
-    //return this.userRepository.addBookToUser(userId, bookId);
-  }
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
 
-  returnBook(userId: string, bookId: string) {
-    const user = this.findOne(userId);
-    
-    //if (!user.borrowedBooks.includes(bookId)) {
-     // throw new BadRequestException('This user did not borrow this book');
-    //}
+        const hasBook = user.books.some((b: number) => b === bookId);
+        if (!hasBook) {
+            throw new BadRequestException('This user did not borrow this book');
+        }
 
-    //this.bookRepository.updateStatus(bookId, false, null);
-    return this.userRepository.removeBookFromUser(userId, bookId);
+        this.userRepository.removeBookFromUser(userId, bookId); 
+
+        return book;
+    }
+
+  async create(userData: CreateUserDto) { 
+    return this.userRepository.create(userData);
   }
 }

@@ -1,33 +1,30 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Patch, Req, UseGuards } from '@nestjs/common';
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
-@Controller('users')
+@Controller('users') 
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly authService: AuthService, 
+    private readonly usersService: UsersService
+  ) {}
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
-  @Post(':userId/borrow/:bookId')
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/borrow')
   borrowBook(
-    @Param('userId') userId: string,
-    @Param('bookId') bookId: string,
+      @Req() req,
+      @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.usersService.borrowBook(userId, bookId);
+      return this.usersService.borrowBook(id, req.user.userId);
   }
-
-  @Post(':userId/return/:bookId')
+ 
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/return')
   returnBook(
-    @Param('userId') userId: string,
-    @Param('bookId') bookId: string,
+      @Req() req,
+      @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.usersService.returnBook(userId, bookId);
+      return this.usersService.returnBook(id, req.user.userId);
   }
 }

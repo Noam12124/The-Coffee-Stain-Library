@@ -1,13 +1,13 @@
 export class Book {
-    id: number;
+    bookId: number;
     title: string;
     author: string;
-    userHoldingBook: number | null;
-    constructor(id: number, title: string, author: string, userHoldingBook: number | null) {
-        this.id = id;
+    borrowed: boolean = false;
+    constructor(bookId: number, title: string, author: string) {
+        this.bookId = bookId;
         this.title = title;
         this.author = author;
-        this.userHoldingBook = userHoldingBook;
+        this.borrowed = false;
     }
 
 }
