@@ -9,18 +9,14 @@ export class BookRepository {
     findAll(): Book[] {
         return this.mockDb.books;
     }
-    findById(id: number): Book | undefined {
-        return this.mockDb.books.find((book: Book) => book.bookId === id);
+    findById(id: number): Book {
+        const book = this.mockDb.books.find((book: Book) => book.bookId === id);
+        if (!book) {
+            throw new Error(`Book with ID ${id} not found`);
+        }
+        return book;
     }
 
-    updateUserHoldingBook(bookId: number, userHoldingBook: number | null): Book | undefined {
-        const book = this.findById(bookId); 
-        if (book) {
-            book.userHoldingBook = userHoldingBook;
-            book.borrowed = userHoldingBook !== null;
-        }
-        return book;    
-    }
 
     findAvailable(): Book[] {
         return this.mockDb.books.filter((b: Book) => !b.borrowed);
@@ -40,7 +36,7 @@ export class BookRepository {
 
         const nextId = maxId + 1;
 
-        const book = new Book(nextId, title, author, null);
+        const book = new Book(nextId, title, author);
         this.mockDb.books.push(book);
         return book;
     }

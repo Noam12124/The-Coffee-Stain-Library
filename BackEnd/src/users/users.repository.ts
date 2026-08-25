@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MockDatabaseService } from '../mock-database.service'; 
 import { User } from './users.entity';
 import { Book } from 'src/books/books.entity';
@@ -6,32 +6,40 @@ import { Book } from 'src/books/books.entity';
 @Injectable()
 export class UserRepository {
     constructor(private readonly mockDb: MockDatabaseService) {}
-    
-    findAll(): User[] {
-        return this.mockDb.users;
-    }
 
-    findById(id: string | number): User | undefined {
+    findById(id:number): User | undefined {
         const numericId = Number(id);
         return this.mockDb.users.find((user: User) => user.userId === numericId);
     }
 
-    findByEmail(email: string): User | undefined {
-        return this.mockDb.users.find((user: User) => user.email === email);
+    findByEmail(email: string): User {
+        const user = this.mockDb.users.find((u: User) => u.email === email);
+        
+        if (!user) {
+            throw new NotFoundException(`User with email ${email} not found`);
+        }
+        
+        return user;
     }
 
-    addBookToUser(userId: string | number, book: Book): User | undefined {
+
+    addBookToUser(userId:number, bookId: number): User | undefined {
         const user = this.findById(userId);
+        const book = this.mockDb.books.find((b: Book) => b.bookId === bookId);
+        if (!book) {
+            throw new Error(`Book with ID ${bookId} not found`);
+        }
         if (user) {
-            user.books.push(book); 
+            user.books.push(bookId); 
         }
         return user;
     }
 
-    removeBookFromUser(userId: string | number, book: Book): User | undefined {
+    removeBookFromUser(userId: number, bookId: number): User | undefined {
         const user = this.findById(userId);
+        
         if (user) {
-            user.books = user.books.filter((b: Book) => b.bookId !== book.bookId); 
+            user.books = user.books.filter((b: number) => b !== bookId); 
         }
         return user;
     }

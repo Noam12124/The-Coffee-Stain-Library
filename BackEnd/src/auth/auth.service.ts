@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { omit } from 'lodash';
 import { SignupDto } from './dto/signup.dto';
 import { UserRepository } from '../users/users.repository';
-import { UserRole } from '../users/users.entity';
+import { UserRole } from '../common/enums/user-role.enum';
+import { LoginDto } from './dto/login.dto';
+import { User } from '../users/users.entity';
+import { jwtConstants } from './jwt.constants';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,7 +24,7 @@ export class AuthService {
             throw new BadRequestException('Email already exists');
         }
 
-        const hashedPassword = await bcrypt.hash(signupDto.password, 10);
+        const hashedPassword = await bcrypt.hash(signupDto.password, jwtConstants.BCRYPT_SALT_ROUNDS);
         
         const newUser = this.userRepository.create({
             name: signupDto.name,
@@ -32,16 +36,19 @@ export class AuthService {
         return this.login(newUser);
     }
 
-  async login(user: any) {
+  async login(loginDto: LoginDto) {
+    const user = await this.validateUser(loginDto.email, loginDto.password);
+    
     const payload = { email: user.email, sub: user.userId, role: user.role };
     const sanitizedUser = omit(user, ['password']);
+    
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
       user: sanitizedUser,
     };
   }
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
