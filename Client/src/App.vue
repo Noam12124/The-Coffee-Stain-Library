@@ -1,30 +1,27 @@
 <script setup>
-import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { authApi } from "./services/api";
-import AuthView from "./components/AuthView.vue";
-import HomeView from "./components/HomeView.vue";
 
-const isAuthenticated = ref(authApi.isAuthenticated());
+const router = useRouter();
 
-const currentUser = computed(() => authApi.getUser());
+const handleAuthenticated = () => {
+  router.push("/");
+};
 
-function handleAuthenticated() {
-  isAuthenticated.value = true;
-}
-
-function handleLogout() {
+const handleLogout = () => {
   authApi.logout();
-  isAuthenticated.value = false;
+  router.push("/login");
 }
 </script>
 
 <template>
-  <AuthView v-if="!isAuthenticated" @authenticated="handleAuthenticated" />
-  <HomeView
-    v-else
-    :current-user="currentUser"
-    @logout="handleLogout"
-  />
+  <RouterView v-slot="{ Component }">
+    <component
+      :is="Component"
+      @authenticated="handleAuthenticated"
+      @logout="handleLogout"
+    />
+  </RouterView>
 </template>
 
 <style>

@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { omit } from 'lodash';
 import { SignupDto } from './dto/signup.dto';
 import { UserRepository } from '../users/users.repository';
-import { UserRole } from '../users/users.entity';
+import { User, UserRole } from '../users/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +33,7 @@ export class AuthService {
     return this.login(newUser);
   }
 
-  async login(user: any) {
+  async login(user: User) {
     const payload = { email: user.email, sub: user.userId, role: user.role };
     const sanitizedUser = omit(user, ['password']);
     return {
@@ -41,7 +41,7 @@ export class AuthService {
       user: sanitizedUser,
     };
   }
-async validateUser(email: string, password: string): Promise<any> {
+async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
